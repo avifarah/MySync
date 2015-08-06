@@ -1,25 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MySync
+﻿namespace MySync
 {
+	using System;
+	using System.Text;
 	using System.Reflection;
 	using System.IO;
 	using log4net;
 	using System.Diagnostics;
 
-	public static class FileSystem
+	public class FileSystem : IFileSystem
 	{
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		public static void FileCopy(string srcP, string dstP)
+		public void CopyFile(string srcP, string dstP)
+		{
+			try
+			{
+				UnsafeCopyFile(srcP, dstP);
+			}
+			catch (Exception ex)
+			{
+				log.Error($"Error while copying file.  src: \"{srcP}\".  dst: \"{dstP}\".  {ex.Message}", ex);
+			}
+		}
+
+		private void UnsafeCopyFile(string srcP, string dstP)
 		{
 			if (!File.Exists(srcP))
 			{
-				log.ErrorFormat("Source file: \"{0}\" does not exist", srcP);
+				log.Error($"Source file: \"{srcP}\" does not exist");
 				return;
 			}
 
@@ -32,10 +40,10 @@ namespace MySync
 				if (Directory.Exists(dstDirF))
 				{
 					try { File.Copy(srcP, dstP, true); }
-					catch (Exception ex) { log.ErrorFormat("File copy: \"{0}\" to \"{1}\" failed with an error: {2}", srcP, dstP, ex.Message); }
-                }
+					catch (Exception ex) { log.Error($"File copy: \"{srcP}\" to \"{dstP}\" failed with an error: {ex.Message}", ex); }
+				}
 				else
-					log.ErrorFormat("Destination folder: \"{0}\" was not found.", dstDirF);
+					log.Error($"Destination folder: \"{dstDirF}\" was not found.");
 				return;
 			}
 
@@ -49,25 +57,37 @@ namespace MySync
 				{
 					string dstPathFull = Path.Combine(dstP, srcFile);
 					try { File.Copy(srcP, dstPathFull, true); }
-					catch (Exception ex) { log.ErrorFormat("File copy: \"{0}\" to: \"{1}\" failed with an error: {2}", srcP, dstPathFull, ex.Message); }
+					catch (Exception ex) { log.Error($"File copy: \"{srcP}\" to: \"{dstPathFull}\" failed with an error: {ex.Message}", ex); }
 				}
 				else
-					log.ErrorFormat("Destination folder: \"{0}\" was not found", dstP);
+					log.Error($"Destination folder: \"{dstP}\" was not found");
 				return;
 			}
 
 			// Desination is neither a file nor a directory
-			log.ErrorFormat("Source does not match destination: \"{0}\" destination: \"{1}\"", srcP, dstP);
+			log.Error($"Source does not match destination: \"{srcP}\" destination: \"{dstP}\"");
 		}
 
-		public static void CopyDirectory(DirectoryInfo src, DirectoryInfo dst)
+		public void CopyDirectory(DirectoryInfo src, DirectoryInfo dst)
 		{
 			CopyDirectory(src.FullName, dst.FullName);
 		}
 
-		public static void CopyDirectory(string src, string dst)
+		public void CopyDirectory(string src, string dst)
 		{
-            int lineCount = 0;
+			try
+			{
+				UnsafeCopyDirectory(src, dst);
+			}
+			catch (Exception ex)
+			{
+				log.Error($"Error while coping directories: src: \"{src}\", dst: \"{dst}\".  {ex.Message}", ex);
+			}
+		}
+
+		private void UnsafeCopyDirectory(string src, string dst)
+		{
+			int lineCount = 0;
 			int errCount = 0;
 			var output = new StringBuilder();
 			var errOut = new StringBuilder();
@@ -80,7 +100,7 @@ namespace MySync
 					{
 						string exMsg = (lineCount == 0) ? string.Empty : $"\n{output.ToString()}";
 						log.Error($"XCopy exit code: {proc.ExitCode} indicating a potential error. ({proc.StartTime} - {proc.ExitTime}){exMsg}");
-                    }
+					}
 				};
 				proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) => {
 					if (!String.IsNullOrEmpty(e.Data)) output.AppendLine($"[{++lineCount}]: {e.Data}");
@@ -115,15 +135,10 @@ namespace MySync
 				}
 				catch (Exception ex)
 				{
-					string extraMsg = (lineCount == 0) ? string.Empty : $"\nOther output:\n{output.ToString()}"; 
+					string extraMsg = (lineCount == 0) ? string.Empty : $"\nOther output:\n{output.ToString()}";
 					log.Error($"XCopy did not succeed. ({proc.StartTime} - {proc.ExitTime})  Error: {ex.Message}{extraMsg}");
 				}
-            }
-		}
-
-		private static void Proc_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-		{
-			throw new NotImplementedException();
+			}
 		}
 	}
 }

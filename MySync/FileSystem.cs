@@ -1,4 +1,6 @@
-﻿namespace MySync
+﻿using System.Threading;
+
+namespace MySync
 {
 	using System;
 	using System.Text;
@@ -9,7 +11,7 @@
 
 	public class FileSystem : IFileSystem
 	{
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+		private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 		public void CopyFile(string srcP, string dstP)
 		{
@@ -19,7 +21,7 @@
 			}
 			catch (Exception ex)
 			{
-				log.Error($"Error while copying file.  src: \"{srcP}\".  dst: \"{dstP}\".  {ex.Message}", ex);
+				Log.Error($"Error while copying file.  src: \"{srcP}\".  dst: \"{dstP}\".  {ex.Message}", ex);
 			}
 		}
 
@@ -27,7 +29,7 @@
 		{
 			if (!File.Exists(srcP))
 			{
-				log.Error($"Source file: \"{srcP}\" does not exist");
+				Log.Error($"Source file: \"{srcP}\" does not exist");
 				return;
 			}
 
@@ -40,10 +42,10 @@
 				if (Directory.Exists(dstDirF))
 				{
 					try { File.Copy(srcP, dstP, true); }
-					catch (Exception ex) { log.Error($"File copy: \"{srcP}\" to \"{dstP}\" failed with an error: {ex.Message}", ex); }
+					catch (Exception ex) { Log.Error($"File copy: \"{srcP}\" to \"{dstP}\" failed with an error: {ex.Message}", ex); }
 				}
 				else
-					log.Error($"Destination folder: \"{dstDirF}\" was not found.");
+					Log.Error($"Destination folder: \"{dstDirF}\" was not found.");
 				return;
 			}
 
@@ -57,15 +59,15 @@
 				{
 					string dstPathFull = Path.Combine(dstP, srcFile);
 					try { File.Copy(srcP, dstPathFull, true); }
-					catch (Exception ex) { log.Error($"File copy: \"{srcP}\" to: \"{dstPathFull}\" failed with an error: {ex.Message}", ex); }
+					catch (Exception ex) { Log.Error($"File copy: \"{srcP}\" to: \"{dstPathFull}\" failed with an error: {ex.Message}", ex); }
 				}
 				else
-					log.Error($"Destination folder: \"{dstP}\" was not found");
+					Log.Error($"Destination folder: \"{dstP}\" was not found");
 				return;
 			}
 
 			// Desination is neither a file nor a directory
-			log.Error($"Source does not match destination: \"{srcP}\" destination: \"{dstP}\"");
+			Log.Error($"Source does not match destination: \"{srcP}\" destination: \"{dstP}\"");
 		}
 
 		public void CopyDirectory(DirectoryInfo src, DirectoryInfo dst)
@@ -81,7 +83,7 @@
 			}
 			catch (Exception ex)
 			{
-				log.Error($"Error while coping directories: src: \"{src}\", dst: \"{dst}\".  {ex.Message}", ex);
+				Log.Error($"Error while coping directories: src: \"{src}\", dst: \"{dst}\".  {ex.Message}", ex);
 			}
 		}
 
@@ -91,23 +93,30 @@
 			int errCount = 0;
 			var output = new StringBuilder();
 			var errOut = new StringBuilder();
+			var disposed = false;
 
-			using (var proc = new Process())
+			var proc = new Process();
+			try
 			{
 				proc.EnableRaisingEvents = true;
+
+				proc.Disposed += (sender, args) => disposed = true;
 				proc.Exited += (s, e) => {
-					if (proc.ExitCode > 0)
+					if (disposed) return;
+					try
 					{
+						if (proc.ExitCode == 0) return;
 						string exMsg = (lineCount == 0) ? string.Empty : $"\n{output.ToString()}";
-						log.Error($"XCopy exit code: {proc.ExitCode} indicating a potential error. ({proc.StartTime} - {proc.ExitTime}){exMsg}");
+						Log.Error($"XCopy exit code: {proc.ExitCode} indicating a potential error. ({proc.StartTime} - {proc.ExitTime}){exMsg}");
+					}
+					catch (Exception ex)
+					{
+						Log.Error($"{src} -> {dst}.  Failed.  msg: {ex.Message}", ex);
 					}
 				};
-				proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) => {
-					if (!String.IsNullOrEmpty(e.Data)) output.AppendLine($"[{++lineCount}]: {e.Data}");
-				});
-				proc.ErrorDataReceived += (object sender, DataReceivedEventArgs e) => {
-					if (!String.IsNullOrWhiteSpace(e.Data)) errOut.AppendLine($"[{++errCount}]: {e.Data}");
-				};
+
+				proc.OutputDataReceived += (sender, e) => { if (!string.IsNullOrEmpty(e.Data)) output.AppendLine($"[{++lineCount}]: {e.Data}"); };
+				proc.ErrorDataReceived += (sender, e) => { if (!string.IsNullOrWhiteSpace(e.Data)) errOut.AppendLine($"[{++errCount}]: {e.Data}"); };
 
 				proc.StartInfo.FileName = "XCopy";
 				//  /S Copies directories and subdirectories except empty ones.
@@ -136,8 +145,12 @@
 				catch (Exception ex)
 				{
 					string extraMsg = (lineCount == 0) ? string.Empty : $"\nOther output:\n{output.ToString()}";
-					log.Error($"XCopy did not succeed. ({proc.StartTime} - {proc.ExitTime})  Error: {ex.Message}{extraMsg}");
+					Log.Error($"XCopy did not succeed. ({proc.StartTime} - {proc.ExitTime})  Error: {ex.Message}{extraMsg}");
 				}
+			}
+			finally
+			{
+				//proc.Dispose();
 			}
 		}
 	}

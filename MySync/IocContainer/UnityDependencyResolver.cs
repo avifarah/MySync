@@ -15,6 +15,9 @@ namespace MySync.IocContainer
 		private static readonly IUnityContainer UnityContainer;
 
 		public static readonly UnityDependencyResolver Inst = new UnityDependencyResolver();
+
+		public bool IsInitialized { get; private set; }
+
 		private UnityDependencyResolver() { }
 
 		static UnityDependencyResolver()
@@ -25,27 +28,32 @@ namespace MySync.IocContainer
 
 		public void RegisterAll()
 		{
-			UnityContainer.RegisterType<IFileSystem, FileSystem>(new ContainerControlledLifetimeManager());
-
-			//string loggerName = "logger";
-			//InjectionMember im = new InjectionConstructor(loggerName);
-			//UnityContainer.RegisterType<ILogLocator, LogLocator>(new ContainerControlledLifetimeManager(), im);
-
-			//ILog log = null;
 			try
 			{
-				var fs = UnityContainer.Resolve<IFileSystem>();
-				//var locator = UnityContainer.Resolve<ILogLocator>(loggerName);
-				//log = locator.GetService<ILog>(loggerName);
+				//UnityContainer.RegisterType<IFileSystem, FileSystem>(new ContainerControlledLifetimeManager());
+				UnityContainer.RegisterType<IFileSystem, FileSystem>();
+				UnityContainer.RegisterType<ISync, Sync>();
 
-				InjectionMember imFs = new InjectionConstructor(fs);
-				//InjectionMember imLog = new InjectionConstructor(log);
-				UnityContainer.RegisterType<ISync, Sync>(new ContainerControlledLifetimeManager()/*, imFs, imLog*/);
+				//string loggerName = "logger";
+				//InjectionMember im = new InjectionConstructor(loggerName);
+				//UnityContainer.RegisterType<ILogLocator, LogLocator>(new ContainerControlledLifetimeManager(), im);
+
+				////ILog log = null;
+				//	var fs = UnityContainer.Resolve<IFileSystem>();
+				//	//var locator = UnityContainer.Resolve<ILogLocator>(loggerName);
+				//	//log = locator.GetService<ILog>(loggerName);
+
+				//	InjectionMember imFs = new InjectionConstructor(fs);
+				//	//InjectionMember imLog = new InjectionConstructor(log);
+				//	UnityContainer.RegisterType<ISync, Sync>(new ContainerControlledLifetimeManager()/*, imFs, imLog*/);
+
+				IsInitialized = true;
 			}
 			catch (Exception ex)
 			{
 				//log?.Log<UnityDependencyResolver>(LogLevel.Fatal, $"Could not instatiate Sync().  {ex.Message}", ex);
-				WriteLine($"{ex.Message}\n{ex.StackTrace}");
+				Log.Error("Registration of container not successful", ex);
+				//WriteLine($"{ex.Message}\n{ex.StackTrace}");
 			}
 		}
 

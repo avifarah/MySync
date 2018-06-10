@@ -29,7 +29,7 @@ namespace MySync
 		{
 			if (!File.Exists(srcP))
 			{
-				Log.Error($"Source file: \"{srcP}\" does not exist");
+				Log.Warn($"Source file: \"{srcP}\" does not exist");
 				return;
 			}
 
@@ -45,7 +45,7 @@ namespace MySync
 					catch (Exception ex) { Log.Error($"File copy: \"{srcP}\" to \"{dstP}\" failed with an error: {ex.Message}", ex); }
 				}
 				else
-					Log.Error($"Destination folder: \"{dstDirF}\" was not found.");
+					Log.Warn($"Destination folder: \"{dstDirF}\" was not found.");
 				return;
 			}
 
@@ -62,18 +62,15 @@ namespace MySync
 					catch (Exception ex) { Log.Error($"File copy: \"{srcP}\" to: \"{dstPathFull}\" failed with an error: {ex.Message}", ex); }
 				}
 				else
-					Log.Error($"Destination folder: \"{dstP}\" was not found");
+					Log.Warn($"Destination folder: \"{dstP}\" was not found");
 				return;
 			}
 
-			// Desination is neither a file nor a directory
-			Log.Error($"Source does not match destination: \"{srcP}\" destination: \"{dstP}\"");
+			// Destination is neither a file nor a directory
+			Log.Warn($"Source does not match destination: \"{srcP}\" destination: \"{dstP}\"");
 		}
 
-		public void CopyDirectory(DirectoryInfo src, DirectoryInfo dst)
-		{
-			CopyDirectory(src.FullName, dst.FullName);
-		}
+		public void CopyDirectory(DirectoryInfo src, DirectoryInfo dst) => CopyDirectory(src.FullName, dst.FullName);
 
 		public void CopyDirectory(string src, string dst)
 		{
@@ -95,62 +92,54 @@ namespace MySync
 			var errOut = new StringBuilder();
 			var disposed = false;
 
-			var proc = new Process();
-			try
-			{
-				proc.EnableRaisingEvents = true;
+			var proc = new Process { EnableRaisingEvents = true };
 
-				proc.Disposed += (sender, args) => disposed = true;
-				proc.Exited += (s, e) => {
-					if (disposed) return;
-					try
-					{
-						if (proc.ExitCode == 0) return;
-						string exMsg = (lineCount == 0) ? string.Empty : $"\n{output.ToString()}";
-						Log.Error($"XCopy exit code: {proc.ExitCode} indicating a potential error. ({proc.StartTime} - {proc.ExitTime}){exMsg}");
-					}
-					catch (Exception ex)
-					{
-						Log.Error($"{src} -> {dst}.  Failed.  msg: {ex.Message}", ex);
-					}
-				};
-
-				proc.OutputDataReceived += (sender, e) => { if (!string.IsNullOrEmpty(e.Data)) output.AppendLine($"[{++lineCount}]: {e.Data}"); };
-				proc.ErrorDataReceived += (sender, e) => { if (!string.IsNullOrWhiteSpace(e.Data)) errOut.AppendLine($"[{++errCount}]: {e.Data}"); };
-
-				proc.StartInfo.FileName = "XCopy";
-				//  /S Copies directories and subdirectories except empty ones.
-				//  /E Copies directories and subdirectories, including empty ones.  Same as /S /E.May be used to modify /T.
-				//  /C Continues copying even if errors occur.
-				//  /I If destination does not exist and copying more than one file, assumes that destination must be a directory.
-				//  /H Copies hidden and system files also.
-				//  /R Overwrites read-only files.
-				//  /Y Suppresses prompting to confirm you want to overwrite an existing destination file.
-				proc.StartInfo.Arguments = $"\"{src}\" \"{dst}\" /S/E/C/I/H/R/Y";
-				proc.StartInfo.UseShellExecute = false;
-				proc.StartInfo.RedirectStandardOutput = true;
-				proc.StartInfo.RedirectStandardError = true;
-				proc.StartInfo.CreateNoWindow = true;
-
+			proc.Disposed += (sender, args) => disposed = true;
+			proc.Exited += (s, e) => {
+				if (disposed) return;
 				try
 				{
-					proc.Start();
-
-					// Asynchronously read the standard output of the spawned process.  
-					// This raises OutputDataReceived events for each line of output.
-					proc.BeginOutputReadLine();
-					proc.BeginErrorReadLine();
-					proc.WaitForExit();
+					if (proc.ExitCode == 0) return;
+					string exMsg = (lineCount == 0) ? string.Empty : $"\n{output.ToString()}";
+					Log.Error($"XCopy exit code: {proc.ExitCode} indicating a potential error. ({proc.StartTime} - {proc.ExitTime}){exMsg}");
 				}
 				catch (Exception ex)
 				{
-					string extraMsg = (lineCount == 0) ? string.Empty : $"\nOther output:\n{output.ToString()}";
-					Log.Error($"XCopy did not succeed. ({proc.StartTime} - {proc.ExitTime})  Error: {ex.Message}{extraMsg}");
+					Log.Error($"{src} -> {dst}.  Failed.  msg: {ex.Message}", ex);
 				}
-			}
-			finally
+			};
+
+			proc.OutputDataReceived += (sender, e) => { if (!string.IsNullOrEmpty(e.Data)) output.AppendLine($"[{++lineCount}]: {e.Data}"); };
+			proc.ErrorDataReceived += (sender, e) => { if (!string.IsNullOrWhiteSpace(e.Data)) errOut.AppendLine($"[{++errCount}]: {e.Data}"); };
+
+			proc.StartInfo.FileName = "XCopy";
+			//  /S Copies directories and subdirectories except empty ones.
+			//  /E Copies directories and subdirectories, including empty ones.  Same as /S /E.May be used to modify /T.
+			//  /C Continues copying even if errors occur.
+			//  /I If destination does not exist and copying more than one file, assumes that destination must be a directory.
+			//  /H Copies hidden and system files also.
+			//  /R Overwrites read-only files.
+			//  /Y Suppresses prompting to confirm you want to overwrite an existing destination file.
+			proc.StartInfo.Arguments = $"\"{src}\" \"{dst}\" /S/E/C/I/H/R/Y";
+			proc.StartInfo.UseShellExecute = false;
+			proc.StartInfo.RedirectStandardOutput = true;
+			proc.StartInfo.RedirectStandardError = true;
+			proc.StartInfo.CreateNoWindow = true;
+
+			try
 			{
-				//proc.Dispose();
+				proc.Start();
+
+				// Asynchronously read the standard output of the spawned process.  
+				// This raises OutputDataReceived events for each line of output.
+				proc.BeginOutputReadLine();
+				proc.BeginErrorReadLine();
+				proc.WaitForExit();
+			}
+			catch (Exception ex)
+			{
+				string extraMsg = (lineCount == 0) ? string.Empty : $"\nOther output:\n{output.ToString()}";
+				Log.Error($"XCopy did not succeed. ({proc.StartTime} - {proc.ExitTime})  Error: {ex.Message}{extraMsg}");
 			}
 		}
 	}

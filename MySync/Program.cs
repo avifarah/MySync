@@ -1,4 +1,6 @@
-﻿namespace MySync
+﻿using Microsoft.Practices.Unity;
+
+namespace MySync
 {
 	using System;
 	using System.Configuration;
@@ -30,9 +32,15 @@
 				return;
 			}
 
+			if (!UnityDependencyResolver.Inst.IsInitialized)
+			{
+				Log.Error("UnityDependencyResolver was not initialized properly");
+				return;
+			}
+
 			//ISync sync = UnityDependencyResolver.Inst.Container.Resolve<ISync>();
 			IFileSystem fs = new FileSystem();
-			ISync sync = new Sync(fs, null);
+			ISync sync = new Sync(fs);
 
 			//ILogLocator logLocator = UnityDependencyResolver.Inst.Container.Resolve<ILogLocator>("Logger");
 			//_log = logLocator.GetService<ILog>("logger");
@@ -40,16 +48,19 @@
 			string sConBuffWidth = ConfigurationManager.AppSettings["Console.BufferWidth"];
 			if (!string.IsNullOrWhiteSpace(sConBuffWidth))
 			{
-				int w;
-				bool rc = int.TryParse(sConBuffWidth, out w);
-				if (rc) BufferHeight = w;
+				bool rc = int.TryParse(sConBuffWidth, out int w);
+				if (rc)
+					try { BufferHeight = w; }
+					catch { /* swallow exception */ }
 			}
+
 			string sConBuffHeight = ConfigurationManager.AppSettings["Console.BufferHeight"];
 			if (!string.IsNullOrWhiteSpace(sConBuffHeight))
 			{
-				int h;
-				bool rc = int.TryParse(sConBuffHeight, out h);
-				if (rc) BufferHeight = h;
+				bool rc = int.TryParse(sConBuffHeight, out int h);
+				if (rc)
+					try { BufferHeight = h; }
+					catch { /* swallow exception */ }
 			}
 
 			//_log.Log<Program>(LogLevel.Info, ".");

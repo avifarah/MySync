@@ -15,9 +15,9 @@ namespace MySync
 
 	public class Sync : ISync
 	{
-		private int _dirCount;
-		private int _copyFileCount;
-		private int _copyDirCount;
+		private int _dirCount;				// Synchronized directories count
+		private int _copyFileCount;			// Number of files copied
+		private int _copyDirCount;			// Copied directory count
 
 		private readonly bool _isCopy;
 		private readonly IEnumerable<string> _excludeFiles;
@@ -26,20 +26,17 @@ namespace MySync
 		//private readonly ILog _log;
 		private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		public Sync(IFileSystem fs, ILog log)
+		public ILog CLog { get; set; }
+
+		public Sync(IFileSystem fs)
 		{
 			_fs = fs;
-			//_log = Log;
 
 			string exclude = ConfigurationManager.AppSettings["ExcludeFiles"];
-			_excludeFiles = string.IsNullOrWhiteSpace(exclude)
-				? new List<string>()
-				: exclude.Split(';').Where(e => !string.IsNullOrWhiteSpace(e));
+			_excludeFiles = string.IsNullOrWhiteSpace(exclude) ? new List<string>() : exclude.Split(';').Where(e => !string.IsNullOrWhiteSpace(e));
 
 			exclude = ConfigurationManager.AppSettings["ExcludeDirectoriesStartingWith"];
-			_excludeDirectoriesStartingWith = string.IsNullOrWhiteSpace(exclude)
-				? new List<string>()
-				: exclude.Split(';').Where(e => !string.IsNullOrWhiteSpace(e));
+			_excludeDirectoriesStartingWith = string.IsNullOrWhiteSpace(exclude) ? new List<string>() : exclude.Split(';').Where(e => !string.IsNullOrWhiteSpace(e));
 
 			var yeses = new List<string> { "Y", "Yes", "T", "True", "OK", "1" };
 			//var nos = new List<string> { "N", "No", "F", "False", "0" };
@@ -64,7 +61,7 @@ namespace MySync
 				//_log.Log<Sync>(LogLevel.Error, $"Error while Syncing directories:  {ex.Message}", ex);
 				Log.Error($"Error while Syncing directories:  {ex.Message}", ex);
 			}
-        }
+		}
 
 		private void UnsafeSyncDirectory(DirectoryInfo pDir, DirectoryInfo sDir, DirectoryNumbers dirNums, IProgramArgs progArgs)
 		{
@@ -78,7 +75,7 @@ namespace MySync
 					CopyFiles(pDir, sDir);
 					sw.Stop();
 					WriteLine($"({_copyFileCount:#,##0}/{_copyDirCount:#,##0}/{_dirCount:#,##0}).  P: {pDir.FullName}\t\tS: {sDir.FullName}\t{sw.Elapsed.TotalSeconds} [sec].  ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
-                }
+				}
 				else
 				{
 					WriteLine($"({_dirCount:#,##0}, {dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount}).  P: {pDir.FullName}\t\tS: {sDir.FullName}");
@@ -116,18 +113,24 @@ namespace MySync
 					++_copyDirCount;
 					sw.Stop();
 					Log.Info($"[PD]\t{pDi.FullName}\t{sw.Elapsed.TotalSeconds} [sec], ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
-                }
+				}
 				else
 					Log.Info($"[PD]\t{pDi.FullName}\t(Report only), ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
-            }
+			}
 			else
 				SyncDirectory(pDi, sDi, dirNums, progArgs);
 		}
 
 		private void CopyFiles(DirectoryInfo pDir, DirectoryInfo sDir)
 		{
-			FileInfo[] pFiles = pDir.GetFiles();
-			FileInfo[] sFiles = sDir.GetFiles();
+			FileInfo[] pFiles;		// Primary Files
+			try { pFiles = pDir.GetFiles(); }
+			catch (PathTooLongException ex) { Log.Info($"Source Path: \"{pDir.FullName}\" or dir+file too long.  Directory not copied.  Error: {ex.Message}"); return; }
+
+			FileInfo[] sFiles;		// Secondary Files
+			try { sFiles = sDir.GetFiles(); }
+			catch (PathTooLongException ex) { Log.Info($"Destination path: \"{sDir.FullName}\" or dir+file too long.  Directory not copied.  Error: {ex.Message}"); return; }
+
 			Array.Sort(pFiles, (e1, e2) => string.Compare(e1.Name, e2.Name, StringComparison.OrdinalIgnoreCase));
 			Array.Sort(sFiles, (e1, e2) => string.Compare(e1.Name, e2.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -150,7 +153,7 @@ namespace MySync
 						_fs.CopyFile(pFi.FullName, sFile);
 						sw.Stop();
 						Log.Info($"[PO]\t{pFi.FullName}\t{sw.Elapsed.TotalSeconds} [sec], ({++fCount}/{fsCount})");
-                    }
+					}
 					else
 						Log.Info($"[PO]\t{pFi.FullName}\t(Report only), ({++fCount}/{fsCount})");
 				}
@@ -188,7 +191,7 @@ namespace MySync
 							_fs.CopyFile(pFi.FullName, sFi.FullName);
 							sw.Stop();
 							//_log.Log<Sync>(LogLevel.Info, $"[LN]:\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [{sLen:#,##0}])");
-							Log.Info($"[LN]:\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])\t{sw.Elapsed.TotalSeconds} [sec], ({++fCount}/{fsCount})");
+							Log.Info($"[LN]\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])\t{sw.Elapsed.TotalSeconds} [sec], ({++fCount}/{fsCount})");
 						}
 						else
 						{

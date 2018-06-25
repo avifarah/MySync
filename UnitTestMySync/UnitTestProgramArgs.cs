@@ -7,7 +7,7 @@ namespace UnitTestMySync
 	{
 		public ProgArgsDirectoryExistsFake(string primary, string secondary, string skipTil) : base(primary, secondary, skipTil) { }
 
-		public override bool IsDirectoryExist(string dir) => true;
+		protected override bool IsDirectoryExist(string dir) => true;
 	}
 
 	[TestClass]

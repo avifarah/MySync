@@ -1,4 +1,5 @@
-﻿namespace MySync
+﻿
+namespace MySync
 {
 	using System;
 	using System.Linq;
@@ -33,36 +34,29 @@
 			}
 		}
 
-		public string Primary { get; private set; }
+		public string Primary { get; }
 
-		public string Secondary { get; private set; }
+		public string Secondary { get; }
 
-		public string SkipTil { get; private set; }
+		public string SkipTil { get; }
 
 		private bool _stopSkippingFiles = true;
 		private bool _stopSkippingDirectories = true;
 		private readonly List<string> _skipParts;
 		private readonly List<string> _primaryParts;
 
-		public bool IsPrimaryLegit()
-		{
-			var primaryExists = Directory.Exists(Primary);
-			return primaryExists;
-		}
+		public bool IsPrimaryLegit() => Directory.Exists(Primary);
 
-		public bool IsSecondaryLegit()
-		{
-			var secondaryExists = Directory.Exists(Secondary);
-			return secondaryExists;
-		}
+		public bool IsSecondaryLegit() => Directory.Exists(Secondary);
 
+		/// <inheritdoc />
 		/// <summary>
-		/// SkipTill may be:
-		///		>	Empty
-		///		>	Must exits as a directory
-		///		>	It must be a superset of the primary directory
-		/// </summary>
-		/// <returns></returns>
+		///  SkipTill may be:
+		/// 		&gt;	Empty
+		/// 		&gt;	Must exits as a directory
+		/// 		&gt;	It must be a superset of the primary directory
+		///  </summary>
+		///  <returns></returns>
 		public bool IsSkipTilLegit()
 		{
 			if (string.IsNullOrWhiteSpace(SkipTil)) return true;
@@ -73,11 +67,12 @@
 			return allEqual;
 		}
 
-		public virtual bool IsDirectoryExist(string dir)
-		{
-			bool rc = Directory.Exists(dir);
-			return rc;
-		}
+		/// <summary>
+		/// Needed for unit testing
+		/// </summary>
+		/// <param name="dir"></param>
+		/// <returns></returns>
+		protected virtual bool IsDirectoryExist(string dir) => Directory.Exists(dir);
 
 		private List<string> BreakDirParts(string dir)
 		{

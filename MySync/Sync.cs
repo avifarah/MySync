@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using System.Net.Security;
+
 
 namespace MySync
 {
@@ -123,6 +123,8 @@ namespace MySync
 
 		private void CopyFiles(DirectoryInfo pDir, DirectoryInfo sDir)
 		{
+			Log.Info($"{MethodBase.GetCurrentMethod().Name}.  Primary Dir: {pDir.Name},  Secondary Dir: {sDir.Name}");
+
 			FileInfo[] pFiles;		// Primary Files
 			try { pFiles = pDir.GetFiles(); }
 			catch (PathTooLongException ex) { Log.Info($"Source Path: \"{pDir.FullName}\" or dir+file too long.  Directory not copied.  Error: {ex.Message}"); return; }
@@ -144,7 +146,8 @@ namespace MySync
 				if (sFi == null)
 				{
 					//_log.Log<Sync>(LogLevel.Info, $"[PO]\t{pFi.FullName}");
-					string sFile = Path.Combine(sDir.FullName, Path.GetFileName(pFi.FullName));
+					var sFile = Path.Combine(sDir.FullName, Path.GetFileName(pFi.FullName));
+					Log.Info($"[PO]\t{pFi.FullName}");
 					if (_isCopy)
 					{
 						var sw = new Stopwatch();
@@ -152,10 +155,10 @@ namespace MySync
 						++_copyFileCount;
 						_fs.CopyFile(pFi.FullName, sFile);
 						sw.Stop();
-						Log.Info($"[PO]\t{pFi.FullName}\t{sw.Elapsed.TotalSeconds} [sec], ({++fCount}/{fsCount})");
+						Log.Info($"\t{sw.Elapsed.TotalSeconds} [sec], Count in dir: ({++fCount}/{fsCount})");
 					}
 					else
-						Log.Info($"[PO]\t{pFi.FullName}\t(Report only), ({++fCount}/{fsCount})");
+						Log.Info($"\t(Report only), Count in dir: ({++fCount}/{fsCount})");
 				}
 				else
 				{
@@ -165,6 +168,7 @@ namespace MySync
 					var sLen = sFi.Length;
 					if (pLaccess > sLaccess)
 					{
+						Log.Info($"[TM]\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])");
 						if (_isCopy)
 						{
 							var sw = new Stopwatch();
@@ -173,16 +177,17 @@ namespace MySync
 							_fs.CopyFile(pFi.FullName, sFi.FullName);
 							sw.Stop();
 							//_log.Log<Sync>(LogLevel.Info, $"[TM]\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, {sLen:#,##0})");
-							Log.Info($"[TM]\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])\t{sw.Elapsed.TotalSeconds} [sec], ({++fCount}/{fsCount})");
+							Log.Info($"\t{sw.Elapsed.TotalSeconds} [sec], Count in dir: ({++fCount}/{fsCount})");
 						}
 						else
 						{
 							//_log.Log<Sync>(LogLevel.Info, $"[TM]\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, {sLen:#,##0})");
-							Log.Info($"[TM]\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])\t(Report only), ({++fCount}/{fsCount})");
+							Log.Info($"\t(Report only), Count in dir: ({++fCount}/{fsCount})");
 						}
 					}
 					else if (pLen != sLen)
 					{
+						Log.Info($"[LN]\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])");
 						if (_isCopy)
 						{
 							var sw = new Stopwatch();
@@ -191,12 +196,12 @@ namespace MySync
 							_fs.CopyFile(pFi.FullName, sFi.FullName);
 							sw.Stop();
 							//_log.Log<Sync>(LogLevel.Info, $"[LN]:\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [{sLen:#,##0}])");
-							Log.Info($"[LN]\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])\t{sw.Elapsed.TotalSeconds} [sec], ({++fCount}/{fsCount})");
+							Log.Info($"\t{sw.Elapsed.TotalSeconds} [sec], Count in dir: ({++fCount}/{fsCount})");
 						}
 						else
 						{
 							//_log.Log<Sync>(LogLevel.Info, $"[LN]:\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [{sLen:#,##0}])");
-							Log.Info($"[LN]:\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])\t(Report only), ({++fCount}/{fsCount})");
+							Log.Info($"\t(Report only), Count in dir: ({++fCount}/{fsCount})");
 						}
 					}
 				}

@@ -4,8 +4,10 @@ namespace MySync
 {
 	public interface IFileSystem
 	{
-		void CopyFile(string srcP, string dstP);
+		void CopyFile(string src, string dst);
+
 		void CopyDirectory(DirectoryInfo src, DirectoryInfo dst);
+
 		void CopyDirectory(string src, string dst);
-    }
+	}
 }

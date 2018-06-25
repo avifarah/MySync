@@ -1,5 +1,4 @@
-﻿using System.Threading;
-
+﻿
 namespace MySync
 {
 	using System;
@@ -13,61 +12,61 @@ namespace MySync
 	{
 		private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		public void CopyFile(string srcP, string dstP)
+		public void CopyFile(string src, string dst)
 		{
 			try
 			{
-				UnsafeCopyFile(srcP, dstP);
+				UnsafeCopyFile(src, dst);
 			}
 			catch (Exception ex)
 			{
-				Log.Error($"Error while copying file.  src: \"{srcP}\".  dst: \"{dstP}\".  {ex.Message}", ex);
+				Log.Error($"Error while copying file.  src: \"{src}\".  dst: \"{dst}\".  {ex.Message}", ex);
 			}
 		}
 
-		private void UnsafeCopyFile(string srcP, string dstP)
+		private void UnsafeCopyFile(string src, string dst)
 		{
-			if (!File.Exists(srcP))
+			if (!File.Exists(src))
 			{
-				Log.Warn($"Source file: \"{srcP}\" does not exist");
+				Log.Warn($"Source file does not exist (src.Length = {src.Length}): \"{src}\"");
 				return;
 			}
 
 			// Is destination file or directory
-			string srcFile = Path.GetFileName(srcP);
-			string dstFile = Path.GetFileName(dstP);
+			var srcFile = Path.GetFileName(src);
+			var dstFile = Path.GetFileName(dst);
 			if (string.Compare(srcFile, dstFile, StringComparison.InvariantCultureIgnoreCase) == 0)
 			{
-				string dstDirF = Path.GetDirectoryName(dstP);
+				var dstDirF = Path.GetDirectoryName(dst);
 				if (Directory.Exists(dstDirF))
 				{
-					try { File.Copy(srcP, dstP, true); }
-					catch (Exception ex) { Log.Error($"File copy: \"{srcP}\" to \"{dstP}\" failed with an error: {ex.Message}", ex); }
+					try { File.Copy(src, dst, true); }
+					catch (Exception ex) { Log.Error($"File copy: \"{src}\" to \"{dst}\" failed with an error: {ex.Message}", ex); }
 				}
 				else
 					Log.Warn($"Destination folder: \"{dstDirF}\" was not found.");
 				return;
 			}
 
-			// Potentially destP, destination Path, is a directory
-			string srcDirF = Path.GetDirectoryName(srcP);
-			string srcDir1 = Path.GetFileName(srcDirF);
-			string dstDir1 = Path.GetFileName(dstP);
+			// Potentially dest, destination Path, is a directory
+			var srcDirF = Path.GetDirectoryName(src);
+			var srcDir1 = Path.GetFileName(srcDirF);
+			var dstDir1 = Path.GetFileName(dst);
 			if (string.Compare(srcDir1, dstDir1, StringComparison.InvariantCultureIgnoreCase) == 0)
 			{
-				if (Directory.Exists(dstP))
+				if (Directory.Exists(dst))
 				{
-					string dstPathFull = Path.Combine(dstP, srcFile);
-					try { File.Copy(srcP, dstPathFull, true); }
-					catch (Exception ex) { Log.Error($"File copy: \"{srcP}\" to: \"{dstPathFull}\" failed with an error: {ex.Message}", ex); }
+					var dstPathFull = Path.Combine(dst, srcFile);
+					try { File.Copy(src, dstPathFull, true); }
+					catch (Exception ex) { Log.Error($"File copy: \"{src}\" to: \"{dstPathFull}\" failed with an error: {ex.Message}", ex); }
 				}
 				else
-					Log.Warn($"Destination folder: \"{dstP}\" was not found");
+					Log.Warn($"Destination folder: \"{dst}\" was not found");
 				return;
 			}
 
 			// Destination is neither a file nor a directory
-			Log.Warn($"Source does not match destination: \"{srcP}\" destination: \"{dstP}\"");
+			Log.Warn($"Source does not match destination: \"{src}\" destination: \"{dst}\"");
 		}
 
 		public void CopyDirectory(DirectoryInfo src, DirectoryInfo dst) => CopyDirectory(src.FullName, dst.FullName);
@@ -86,8 +85,8 @@ namespace MySync
 
 		private void UnsafeCopyDirectory(string src, string dst)
 		{
-			int lineCount = 0;
-			int errCount = 0;
+			var lineCount = 0;
+			var errCount = 0;
 			var output = new StringBuilder();
 			var errOut = new StringBuilder();
 			var disposed = false;
@@ -101,7 +100,7 @@ namespace MySync
 				{
 					if (proc.ExitCode == 0) return;
 					string exMsg = (lineCount == 0) ? string.Empty : $"\n{output.ToString()}";
-					Log.Error($"XCopy exit code: {proc.ExitCode} indicating a potential error. ({proc.StartTime} - {proc.ExitTime}){exMsg}");
+					Log.Warn($"XCopy exit code: {proc.ExitCode} indicating a potential error. ({proc.StartTime} - {proc.ExitTime}){exMsg}");
 				}
 				catch (Exception ex)
 				{

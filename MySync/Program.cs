@@ -1,4 +1,4 @@
-﻿using Microsoft.Practices.Unity;
+﻿//using Microsoft.Practices.Unity;
 
 namespace MySync
 {
@@ -48,7 +48,8 @@ namespace MySync
 			string sConBuffWidth = ConfigurationManager.AppSettings["Console.BufferWidth"];
 			if (!string.IsNullOrWhiteSpace(sConBuffWidth))
 			{
-				bool rc = int.TryParse(sConBuffWidth, out int w);
+				int w;
+				bool rc = int.TryParse(sConBuffWidth, out w);
 				if (rc)
 					try { BufferHeight = w; }
 					catch { /* swallow exception */ }
@@ -57,7 +58,8 @@ namespace MySync
 			string sConBuffHeight = ConfigurationManager.AppSettings["Console.BufferHeight"];
 			if (!string.IsNullOrWhiteSpace(sConBuffHeight))
 			{
-				bool rc = int.TryParse(sConBuffHeight, out int h);
+				int h;
+				bool rc = int.TryParse(sConBuffHeight, out h);
 				if (rc)
 					try { BufferHeight = h; }
 					catch { /* swallow exception */ }

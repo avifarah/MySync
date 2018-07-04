@@ -11,14 +11,14 @@ namespace MySync
 	{
 		public ProgramArgs(string primary, string secondary, string skipTil)
 		{
-			Primary = string.IsNullOrWhiteSpace(primary) ? ConfigurationManager.AppSettings["Primary"] : primary.Trim();
-			if (!string.IsNullOrWhiteSpace(Primary)) Primary = Path.GetFullPath(Primary);
+			Primary = MySyncConfiguration.Inst.GetPrimaryDir;
+			Primary = Path.GetFullPath(Primary);
 
-			Secondary = string.IsNullOrWhiteSpace(secondary) ? ConfigurationManager.AppSettings["Secondary"] : secondary.Trim();
-			if (!string.IsNullOrWhiteSpace(Secondary)) Secondary = Path.GetFullPath(Secondary);
+			Secondary = MySyncConfiguration.Inst.GetSecondaryDir;
+			Secondary = Path.GetFullPath(Secondary);
 
-			SkipTil = string.IsNullOrWhiteSpace(skipTil) ? ConfigurationManager.AppSettings["SkippingTill"] : skipTil.Trim();
-			SkipTil = (string.IsNullOrWhiteSpace(SkipTil)) ? null : Path.GetFullPath(SkipTil);
+			SkipTil = string.IsNullOrWhiteSpace(skipTil) ? MySyncConfiguration.Inst.SkippingTillDir : skipTil.Trim();
+			SkipTil = string.IsNullOrWhiteSpace(SkipTil) ? null : Path.GetFullPath(SkipTil);
 
 			_primaryParts = BreakDirParts(Primary);
 			_skipParts = BreakDirParts(SkipTil);

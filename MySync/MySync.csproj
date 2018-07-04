@@ -83,6 +83,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeContract\CodeContract.cs" />
     <Compile Include="DirectoryNumbers.cs" />
     <Compile Include="FileSystem.cs" />
     <Compile Include="IFileSystem.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="LogService\ILog.cs" />
     <Compile Include="LogService\Log4NetAdapter.cs" />
     <Compile Include="LogService\LogLevel.cs" />
+    <Compile Include="MySyncConfiguration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProgramArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -99,6 +101,7 @@
     <Compile Include="LogService\LogLocator.cs" />
     <Compile Include="Sync.cs" />
     <Compile Include="IocContainer\UnityDependencyResolver.cs" />
+    <Compile Include="Utils\BooleanUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

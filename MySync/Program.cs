@@ -28,7 +28,7 @@ namespace MySync
 		{
 			if (UnityDependencyResolver.Inst == null)
 			{
-				WriteLine("Dependency resolver did not initialize...");
+				Log.Error("Dependency resolver did not initialize...");
 				return;
 			}
 
@@ -45,25 +45,8 @@ namespace MySync
 			//ILogLocator logLocator = UnityDependencyResolver.Inst.Container.Resolve<ILogLocator>("Logger");
 			//_log = logLocator.GetService<ILog>("logger");
 
-			string sConBuffWidth = ConfigurationManager.AppSettings["Console.BufferWidth"];
-			if (!string.IsNullOrWhiteSpace(sConBuffWidth))
-			{
-				int w;
-				bool rc = int.TryParse(sConBuffWidth, out w);
-				if (rc)
-					try { BufferHeight = w; }
-					catch { /* swallow exception */ }
-			}
-
-			string sConBuffHeight = ConfigurationManager.AppSettings["Console.BufferHeight"];
-			if (!string.IsNullOrWhiteSpace(sConBuffHeight))
-			{
-				int h;
-				bool rc = int.TryParse(sConBuffHeight, out h);
-				if (rc)
-					try { BufferHeight = h; }
-					catch { /* swallow exception */ }
-			}
+			BufferWidth = MySyncConfiguration.Inst.ConsoleBufferWidth;
+			BufferHeight = MySyncConfiguration.Inst.ConsoleBufferHeight;
 
 			//_log.Log<Program>(LogLevel.Info, ".");
 			//_log.Log<Program>(LogLevel.Info, ".");
@@ -95,10 +78,10 @@ namespace MySync
 
 			if (!progArgs.IsSecondaryLegit())
 			{
-				//_log.Log<Program>(LogLevel.Error, $"Secondary directory: \"{secondary}\" does not exist as a directory"); return;
-				Log.Error($"Secondary directory: \"{progArgs.Secondary}\" does not exist as a directory");
-				return;
+				Log.Info($"Secondary directory: \"{progArgs.Secondary}\" does not exist as a directory.  Recreating");
+				Directory.CreateDirectory(progArgs.Secondary);
 			}
+
 			//_log.Log<Program>(LogLevel.Info, $"Secondary: {secondary}");
 			Log.Info($"Secondary: {progArgs.Secondary}");
 

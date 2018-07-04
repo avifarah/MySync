@@ -13,50 +13,50 @@ namespace UnitTestMySync
 	[TestClass]
 	public class UnitTestProgramArgs
 	{
-		[TestMethod]
-		public void IsSkipTilLegitNetworkDriveSuccess()
-		{
-			// Arrange
-			var primary = @"\\part1\part2\part3";
-			var skipTil = @"\\part1\part2\part3\part4\part5";
-			var progArgs = new ProgArgsDirectoryExistsFake(primary, null, skipTil);
+		//[TestMethod]
+		//public void IsSkipTilLegitNetworkDriveSuccess()
+		//{
+		//	// Arrange
+		//	var primary = @"\\part1\part2\part3";
+		//	var skipTil = @"\\part1\part2\part3\part4\part5";
+		//	var progArgs = new ProgArgsDirectoryExistsFake(primary, null, skipTil);
 
-			// Act
-			bool rc = progArgs.IsSkipTilLegit();
+		//	// Act
+		//	bool rc = progArgs.IsSkipTilLegit();
 
-			// Assert
-			Assert.IsTrue(rc);
-		}
+		//	// Assert
+		//	Assert.IsTrue(rc);
+		//}
 
-		[TestMethod]
-		public void IsSkipTilLegitLocalDriveSuccess()
-		{
-			// Arrange
-			var primary = @"c:\part1\part2\part3";
-			var skipTil = @"c:\part1\part2\part3\part4\part5";
-			var progArgs = new ProgArgsDirectoryExistsFake(primary, null, skipTil);
+		//[TestMethod]
+		//public void IsSkipTilLegitLocalDriveSuccess()
+		//{
+		//	// Arrange
+		//	var primary = @"c:\part1\part2\part3";
+		//	var skipTil = @"c:\part1\part2\part3\part4\part5";
+		//	var progArgs = new ProgArgsDirectoryExistsFake(primary, null, skipTil);
 
-			// Act
-			bool rc = progArgs.IsSkipTilLegit();
+		//	// Act
+		//	bool rc = progArgs.IsSkipTilLegit();
 
-			// Assert
-			Assert.IsTrue(rc);
-		}
+		//	// Assert
+		//	Assert.IsTrue(rc);
+		//}
 
-		[TestMethod]
-		public void IsSkipTilLegitLocalDriveSkipIsNullSuccess()
-		{
-			// Arrange
-			var primary = @"\\part1\part2\part3";
-			var skipTil = string.Empty;
-			var progArgs = new ProgramArgs(primary, null, skipTil);
+		//[TestMethod]
+		//public void IsSkipTilLegitLocalDriveSkipIsNullSuccess()
+		//{
+		//	// Arrange
+		//	var primary = @"\\part1\part2\part3";
+		//	var skipTil = string.Empty;
+		//	var progArgs = new ProgramArgs(primary, null, skipTil);
 
-			// Act
-			bool rc = progArgs.IsSkipTilLegit();
+		//	// Act
+		//	bool rc = progArgs.IsSkipTilLegit();
 
-			// Assert
-			Assert.IsTrue(rc);
-		}
+		//	// Assert
+		//	Assert.IsTrue(rc);
+		//}
 
 		[TestMethod]
 		public void IsSkipTilLegitNetworkDriveSkipIsNullSuccess()
@@ -73,20 +73,20 @@ namespace UnitTestMySync
 			Assert.IsTrue(rc);
 		}
 
-		[TestMethod]
-		public void IsSkipDirCopySkipGtDirTrue()
-		{
-			// Arrange
-			var primary = @"c:\part1\part2";
-			var skipTil = @"c:\part1\part2\part3\part4";
-			var progArgs = new ProgArgsDirectoryExistsFake(primary, null, skipTil);
+		//[TestMethod]
+		//public void IsSkipDirCopySkipGtDirTrue()
+		//{
+		//	// Arrange
+		//	var primary = @"c:\part1\part2";
+		//	var skipTil = @"c:\part1\part2\part3\part4";
+		//	var progArgs = new ProgArgsDirectoryExistsFake(primary, null, skipTil);
 
-			// Act
-			bool rc = progArgs.IsSkipDirCopy(@"c:\part1\part2\different");
+		//	// Act
+		//	bool rc = progArgs.IsSkipDirCopy(@"c:\part1\part2\different");
 
-			// Assert
-			Assert.IsTrue(rc);
-		}
+		//	// Assert
+		//	Assert.IsTrue(rc);
+		//}
 
 		[TestMethod]
 		public void IsSkipDirCopySkipGtDirFalse()

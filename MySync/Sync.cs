@@ -24,24 +24,16 @@ namespace MySync
 		private readonly IEnumerable<string> _excludeDirectoriesStartingWith;
 		private readonly IFileSystem _fs;
 		//private readonly ILog _log;
-		private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+		private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 		public ILog CLog { get; set; }
 
 		public Sync(IFileSystem fs)
 		{
 			_fs = fs;
-
-			string exclude = ConfigurationManager.AppSettings["ExcludeFiles"];
-			_excludeFiles = string.IsNullOrWhiteSpace(exclude) ? new List<string>() : exclude.Split(';').Where(e => !string.IsNullOrWhiteSpace(e));
-
-			exclude = ConfigurationManager.AppSettings["ExcludeDirectoriesStartingWith"];
-			_excludeDirectoriesStartingWith = string.IsNullOrWhiteSpace(exclude) ? new List<string>() : exclude.Split(';').Where(e => !string.IsNullOrWhiteSpace(e));
-
-			var yeses = new List<string> { "Y", "Yes", "T", "True", "OK", "1" };
-			//var nos = new List<string> { "N", "No", "F", "False", "0" };
-			string isReadOnly = ConfigurationManager.AppSettings["ReportOnly"];
-			_isCopy = yeses.All(y => string.Compare(y, isReadOnly, StringComparison.InvariantCultureIgnoreCase) != 0);
+			_excludeFiles = MySyncConfiguration.Inst.ExcludeFiles;
+			_excludeDirectoriesStartingWith = MySyncConfiguration.Inst.ExcludeDirectoriesStartingWith;
+			_isCopy = !MySyncConfiguration.Inst.IsReportOnly;
 		}
 
 		public void SyncDirectory(DirectoryInfo pDir, DirectoryInfo sDir, DirectoryNumbers dirNums, IProgramArgs progArgs)
@@ -66,7 +58,7 @@ namespace MySync
 		private void UnsafeSyncDirectory(DirectoryInfo pDir, DirectoryInfo sDir, DirectoryNumbers dirNums, IProgramArgs progArgs)
 		{
 			if (progArgs.IsSkipFileCopy(pDir))
-				WriteLine($"({_dirCount:#,##0}).  Skipping \"{pDir.FullName}\"");
+				Log.Info($"({_dirCount:#,##0}).  Skipping \"{pDir.FullName}\"");
 			else
 			{
 				if (_isCopy)
@@ -74,11 +66,11 @@ namespace MySync
 					var sw = new Stopwatch();
 					CopyFiles(pDir, sDir);
 					sw.Stop();
-					WriteLine($"({_copyFileCount:#,##0}/{_copyDirCount:#,##0}/{_dirCount:#,##0}).  P: {pDir.FullName}\t\tS: {sDir.FullName}\t{sw.Elapsed.TotalSeconds} [sec].  ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
+					Log.Info($"({_copyFileCount:#,##0}/{_copyDirCount:#,##0}/{_dirCount:#,##0}).  P: {pDir.FullName}\t\tS: {sDir.FullName}\t{sw.Elapsed.TotalSeconds} [sec].  ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
 				}
 				else
 				{
-					WriteLine($"({_dirCount:#,##0}, {dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount}).  P: {pDir.FullName}\t\tS: {sDir.FullName}");
+					Log.Info($"({_dirCount:#,##0}, {dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount}).  P: {pDir.FullName}\t\tS: {sDir.FullName}");
 				}
 
 				CopyFiles(pDir, sDir);
@@ -100,6 +92,7 @@ namespace MySync
 		{
 			if (_excludeDirectoriesStartingWith.Any(e => pDi.Name.StartsWith(e, StringComparison.InvariantCultureIgnoreCase))) return;
 
+			Log.Info($"{MethodBase.GetCurrentMethod().Name}: Primary: {pDi.FullName}.   Secondary: {sDir.FullName}");
 			var sDi = sDis.FirstOrDefault(s => string.Compare(s.Name, pDi.Name, StringComparison.InvariantCultureIgnoreCase) == 0);
 			if (sDi == null)
 			{
@@ -123,15 +116,15 @@ namespace MySync
 
 		private void CopyFiles(DirectoryInfo pDir, DirectoryInfo sDir)
 		{
-			Log.Info($"{MethodBase.GetCurrentMethod().Name}.  Primary Dir: {pDir.Name},  Secondary Dir: {sDir.Name}");
+			//Log.Info($"{MethodBase.GetCurrentMethod().Name}.  Primary Dir: {pDir.Name},  Secondary Dir: {sDir.Name}");
 
 			FileInfo[] pFiles;		// Primary Files
 			try { pFiles = pDir.GetFiles(); }
-			catch (PathTooLongException ex) { Log.Info($"Source Path: \"{pDir.FullName}\" or dir+file too long.  Directory not copied.  Error: {ex.Message}"); return; }
+			catch (PathTooLongException ex) { Log.Error($"Source Path: \"{pDir.FullName}\" or dir+file too long.  Directory not copied.  Error: {ex.Message}"); return; }
 
 			FileInfo[] sFiles;		// Secondary Files
 			try { sFiles = sDir.GetFiles(); }
-			catch (PathTooLongException ex) { Log.Info($"Destination path: \"{sDir.FullName}\" or dir+file too long.  Directory not copied.  Error: {ex.Message}"); return; }
+			catch (PathTooLongException ex) { Log.Error($"Destination path: \"{sDir.FullName}\" or dir+file too long.  Directory not copied.  Error: {ex.Message}"); return; }
 
 			Array.Sort(pFiles, (e1, e2) => string.Compare(e1.Name, e2.Name, StringComparison.OrdinalIgnoreCase));
 			Array.Sort(sFiles, (e1, e2) => string.Compare(e1.Name, e2.Name, StringComparison.OrdinalIgnoreCase));

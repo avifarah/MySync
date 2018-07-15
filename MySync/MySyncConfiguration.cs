@@ -76,7 +76,7 @@ namespace MySync
 				if (string.IsNullOrWhiteSpace(skippingTill)) skippingTill = def;
 
 				_cacheString[key] = skippingTill.Trim();
-				if (_cacheString[key] == null)
+				if (string.IsNullOrEmpty(_cacheString[key]))
 				{
 					_cacheString[key] = string.Empty;
 					return _cacheString[key];

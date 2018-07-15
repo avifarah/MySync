@@ -143,7 +143,7 @@ namespace MySync
 				proc.ErrorDataReceived += (sender, e) => {
 					Interlocked.Exchange(ref _lastTouched, DateTime.Now);
 					if (!string.IsNullOrWhiteSpace(e.Data))
-						Log.Error($"[{++errCount}]: {e.Data}");
+						Log.Error($"XCopy reported an error [{++errCount}]: {e.Data}");
 				};
 
 				proc.StartInfo.FileName = "XCopy";

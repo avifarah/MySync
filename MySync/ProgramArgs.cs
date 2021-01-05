@@ -1,5 +1,4 @@
-﻿
-namespace MySync
+﻿namespace MySync
 {
 	using System;
 	using System.Linq;

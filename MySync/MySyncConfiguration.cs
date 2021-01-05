@@ -12,23 +12,23 @@ namespace MySync
 {
 	public class MySyncConfiguration
 	{
-		private static readonly Lazy<MySyncConfiguration> _inst = new Lazy<MySyncConfiguration>(() => new MySyncConfiguration(), true);
+		private static readonly Lazy<MySyncConfiguration> _inst = new(() => new MySyncConfiguration(), true);
 		public static readonly MySyncConfiguration Inst = _inst.Value;
 
 		private MySyncConfiguration() => _appSetting = ConfigurationManager.AppSettings.AllKeys.ToDictionary(k => k, k => ConfigurationManager.AppSettings[k]);
 
 		private readonly Dictionary<string, string> _appSetting;
-		private readonly Dictionary<string, string> _cacheString = new Dictionary<string, string>();
-		private readonly Dictionary<string, int> _cacheInt = new Dictionary<string, int>();
-		private readonly Dictionary<string, TimeSpan> _cacheTimeSpan = new Dictionary<string, TimeSpan>();
-		private readonly Dictionary<string, IEnumerable<string>> _cacheIenumerableOfString = new Dictionary<string, IEnumerable<string>>();
+		private readonly Dictionary<string, string> _cacheString = new();
+		private readonly Dictionary<string, int> _cacheInt = new();
+		private readonly Dictionary<string, TimeSpan> _cacheTimeSpan = new();
+		private readonly Dictionary<string, IEnumerable<string>> _cacheIenumerableOfString = new();
 
 		public string GetPrimaryDir
 		{
 			get
 			{
 				const string key = "Primary";
-				const string def = "G:\\";
+				const string def = "C:\\";
 
 				if (_cacheString.ContainsKey(key)) return _cacheString[key];
 
@@ -42,7 +42,7 @@ namespace MySync
 					return _cacheString[key];
 				}
 
-				throw new Exception($"Primary directory: \"{primary}\" does not exist");
+				throw new Exception($"Primary directory: \"{primary}\" does not exist.  Check configuration file, key=\"Primary\"");
 			}
 		}
 
@@ -119,6 +119,22 @@ namespace MySync
 				}
 
 				throw new Exception($"Config value for \"{key}\" is neither YES nor NO");
+			}
+		}
+
+		public TimeSpan FileDateTolerance
+		{
+			get
+			{
+				const string key = "Millisecond Tolerance For FileDate Comparison";
+				var def = TimeSpan.FromMilliseconds(1000.0);
+				var sTol = GetValue(key);
+				if (sTol == null) return def;
+
+				var rc = double.TryParse(sTol, NumberStyles.Any, CultureInfo.CurrentCulture, out var tolerance);
+				if (!rc) return def;
+
+				return TimeSpan.FromMilliseconds(tolerance);
 			}
 		}
 

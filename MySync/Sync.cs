@@ -196,24 +196,5 @@ namespace MySync
 				}
 			}
 		}
-
-
-		private static int DateTimeCompareUpToTolerance(DateTime left, DateTime right, TimeSpan tolerance)
-		{
-			// left is greater (later) than right
-			// ----------------l--------
-			// -----r-------------------
-			if (left - right > tolerance) return 1;
-
-			// left is less (earlier) than right
-			// -----l-------------------
-			// ----------------r--------
-			if (right - left > tolerance) return -1;
-
-			// left is equal to right, same time
-			// -----l---------		or		-------l-------		or		-----l---------
-			// -------r-------				-----r---------				-----r---------
-			return 0;
-		}
 	}
 }

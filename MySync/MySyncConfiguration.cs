@@ -23,68 +23,91 @@ namespace MySync
 		private readonly Dictionary<string, TimeSpan> _cacheTimeSpan = new();
 		private readonly Dictionary<string, IEnumerable<string>> _cacheIenumerableOfString = new();
 
-		public string GetPrimaryDir
+		const string PrimaryDirKey = "Primary";
+
+		public string PrimaryDir
 		{
 			get
 			{
-				const string key = "Primary";
 				const string def = "C:\\";
 
-				if (_cacheString.ContainsKey(key)) return _cacheString[key];
+				if (_cacheString.ContainsKey(PrimaryDirKey)) return _cacheString[PrimaryDirKey];
 
-				var primary = GetValue(key);
+				var primary = GetValue(PrimaryDirKey);
 				if (string.IsNullOrWhiteSpace(primary)) primary = def;
 
 				primary = primary.Trim();
 				if (Directory.Exists(primary))
 				{
-					_cacheString[key] = primary;
-					return _cacheString[key];
+					_cacheString[PrimaryDirKey] = primary;
+					return _cacheString[PrimaryDirKey];
 				}
 
 				throw new Exception($"Primary directory: \"{primary}\" does not exist.  Check configuration file, key=\"Primary\"");
 			}
+
+			set
+			{
+				if (Directory.Exists(value))
+					_cacheString[PrimaryDirKey] = value;
+			}
 		}
 
-		public string GetSecondaryDir
+		const string SecondaryDirKey = "Secondary";
+
+		public string SecondaryDir
 		{
 			get
 			{
-				const string key = "Secondary";
 				const string def = "M:\\";
 
-				if (_cacheString.ContainsKey(key)) return _cacheString[key];
+				if (_cacheString.ContainsKey(SecondaryDirKey)) return _cacheString[SecondaryDirKey];
 
-				var secondary = GetValue(key);
+				var secondary = GetValue(SecondaryDirKey);
+				secondary = secondary.Trim();
 				if (string.IsNullOrWhiteSpace(secondary)) secondary = def;
 
-				_cacheString[key] = secondary.Trim();
-				return _cacheString[key];
+				_cacheString[SecondaryDirKey] = secondary;
+				return _cacheString[SecondaryDirKey];
+			}
+
+			set
+			{
+				if (Directory.Exists(value))
+					_cacheString[SecondaryDirKey] = value;
 			}
 		}
+
+		const string SkippingTillDirKey = "SkippingTill";
 
 		public string SkippingTillDir
 		{
 			get
 			{
-				const string key = "SkippingTill";
 				var def = string.Empty;
 
-				if (_cacheString.ContainsKey(key)) return _cacheString[key];
+				if (_cacheString.ContainsKey(SkippingTillDirKey)) return _cacheString[SkippingTillDirKey];
 
-				var skippingTill = GetValue(key);
+				var skippingTill = GetValue(SkippingTillDirKey);
+				skippingTill = skippingTill.Trim();
 				if (string.IsNullOrWhiteSpace(skippingTill)) skippingTill = def;
 
-				_cacheString[key] = skippingTill.Trim();
-				if (string.IsNullOrEmpty(_cacheString[key]))
+				_cacheString[SkippingTillDirKey] = skippingTill;
+				if (string.IsNullOrEmpty(_cacheString[SkippingTillDirKey]))
 				{
-					_cacheString[key] = string.Empty;
-					return _cacheString[key];
+					_cacheString[SkippingTillDirKey] = string.Empty;
+					return _cacheString[SkippingTillDirKey];
 				}
 
-				if (Directory.Exists(_cacheString[key])) return _cacheString[key];
+				if (Directory.Exists(_cacheString[SkippingTillDirKey])) return _cacheString[SkippingTillDirKey];
 
 				throw new Exception($"SkippingTill directory: \"{skippingTill}\" does not exist");
+			}
+
+			set
+			{
+				if (Directory.Exists(value))
+					_cacheString[SkippingTillDirKey] = value;
 			}
 		}
 

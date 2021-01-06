@@ -1,23 +1,22 @@
-﻿namespace MySync
-{
-	using System;
-	using System.Linq;
-	using System.Configuration;
-	using System.IO;
-	using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.IO;
+using System.Collections.Generic;
 
+namespace MySync
+{
 	public class ProgramArgs : IProgramArgs
 	{
 		public ProgramArgs(string primary, string secondary, string skipTil)
 		{
-			Primary = MySyncConfiguration.Inst.GetPrimaryDir;
-			Primary = Path.GetFullPath(Primary);
+			if (primary != null && Directory.Exists(primary))
+				MySyncConfiguration.Inst.PrimaryDir = Path.GetFullPath(primary);
 
-			Secondary = MySyncConfiguration.Inst.GetSecondaryDir;
-			Secondary = Path.GetFullPath(Secondary);
+			if (secondary != null && Directory.Exists(secondary))
+				MySyncConfiguration.Inst.SecondaryDir = Path.GetFullPath(secondary);
 
-			SkipTil = string.IsNullOrWhiteSpace(skipTil) ? MySyncConfiguration.Inst.SkippingTillDir : skipTil.Trim();
-			SkipTil = string.IsNullOrWhiteSpace(SkipTil) ? null : Path.GetFullPath(SkipTil);
+			if (!string.IsNullOrWhiteSpace(skipTil) && Directory.Exists(skipTil))
+				MySyncConfiguration.Inst.SkippingTillDir = Path.GetFullPath(skipTil);
 
 			_primaryParts = BreakDirParts(Primary);
 			_skipParts = BreakDirParts(SkipTil);
@@ -33,11 +32,11 @@
 			}
 		}
 
-		public string Primary { get; }
+		public string Primary => MySyncConfiguration.Inst.PrimaryDir;
 
-		public string Secondary { get; }
+		public string Secondary => MySyncConfiguration.Inst.SecondaryDir;
 
-		public string SkipTil { get; }
+		public string SkipTil => MySyncConfiguration.Inst.SkippingTillDir;
 
 		private bool _stopSkippingFiles = true;
 		private bool _stopSkippingDirectories = true;

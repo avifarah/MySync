@@ -3,7 +3,7 @@
 namespace MySync
 {
 	using System;
-	using System.Configuration;
+	//using System.Configuration;
 	using System.IO;
 	using System.Diagnostics;
 	using IocContainer;
@@ -102,8 +102,8 @@ namespace MySync
 			}
 			catch (Exception ex)
 			{
-				//_log.Log<Program>(LogLevel.Error, $"Error while synching \"{primary}\" -> \"{secondary}\".  {ex.Message}", ex);
-				Log.Error($"Error while synching \"{primary}\" -> \"{secondary}\".  {ex.Message}", ex);
+				//_log.Log<Program>(LogLevel.Error, $"Error while syncing \"{primary}\" -> \"{secondary}\".  {ex.Message}", ex);
+				Log.Error($"Error while syncing \"{primary}\" -> \"{secondary}\".  {ex.Message}", ex);
 				return;
 			}
 

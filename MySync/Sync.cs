@@ -6,7 +6,7 @@ namespace MySync
 	using System;
 	using System.IO;
 	using System.Linq;
-	using System.Configuration;
+	//using System.Configuration;
 	using System.Collections.Generic;
 	//using LogService;
 	using System.Reflection;

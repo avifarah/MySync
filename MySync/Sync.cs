@@ -66,11 +66,11 @@ namespace MySync
 					var sw = new Stopwatch();
 					CopyFiles(pDir, sDir);
 					sw.Stop();
-					Log.Info($"({_copyFileCount:#,##0}/{_copyDirCount:#,##0}/{_dirCount:#,##0}).  P: {pDir.FullName}\t\tS: {sDir.FullName}\t{sw.Elapsed.TotalSeconds} [sec].  ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
+					Log.Info($"({_copyFileCount:#,##0}/{_copyDirCount:#,##0}/{_dirCount:#,##0}).  P-Dir: \"{pDir.FullName}\"\tS-Dir: \"{sDir.FullName}\"\t{sw.Elapsed.TotalSeconds} [sec].  ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
 				}
 				else
 				{
-					Log.Info($"({_dirCount:#,##0}, {dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount}).  P: {pDir.FullName}\t\tS: {sDir.FullName}");
+					Log.Info($"({_dirCount:#,##0}, {dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount}).  P-Dir: \"{pDir.FullName}\"\tS-Dir: \"{sDir.FullName}\"");
 				}
 
 				CopyFiles(pDir, sDir);
@@ -92,7 +92,7 @@ namespace MySync
 		{
 			if (_excludeDirectoriesStartingWith.Any(e => pDi.Name.StartsWith(e, StringComparison.InvariantCultureIgnoreCase))) return;
 
-			Log.Info($"{MethodBase.GetCurrentMethod().Name}: Primary: {pDi.FullName}.   Secondary: {sDir.FullName}");
+			//Log.Info($"{MethodBase.GetCurrentMethod().Name}: Primary: \"{pDi.FullName}\".\tSecondary: \"{sDir.FullName}\"");
 			var sDi = sDis.FirstOrDefault(s => string.Compare(s.Name, pDi.Name, StringComparison.InvariantCultureIgnoreCase) == 0);
 			if (sDi == null)
 			{
@@ -105,10 +105,10 @@ namespace MySync
 					_fs.CopyDirectory(pDi.FullName, destination);
 					++_copyDirCount;
 					sw.Stop();
-					Log.Info($"[PD]\t{pDi.FullName}\t{sw.Elapsed.TotalSeconds} [sec], ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
+					Log.Info($"[PD]\t\"{pDi.FullName}\"\t{sw.Elapsed.TotalSeconds} [sec], ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
 				}
 				else
-					Log.Info($"[PD]\t{pDi.FullName}\t(Report only), ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
+					Log.Info($"[PD]\t\"{pDi.FullName}\"\t(Report only), ({dirNums.NestingLevel}/{dirNums.DirectoryCount}/{dirNums.TotalDirectoryCount})");
 			}
 			else
 				SyncDirectory(pDi, sDi, dirNums, progArgs);
@@ -140,7 +140,7 @@ namespace MySync
 				{
 					//_log.Log<Sync>(LogLevel.Info, $"[PO]\t{pFi.FullName}");
 					var sFile = Path.Combine(sDir.FullName, Path.GetFileName(pFi.FullName));
-					Log.Info($"[PO]\t{pFi.FullName}");
+					Log.Info($"[PO]\t\"{pFi.FullName}\"");
 					if (_isCopy)
 					{
 						var sw = new Stopwatch();
@@ -169,18 +169,16 @@ namespace MySync
 							++_copyFileCount;
 							_fs.CopyFile(pFi.FullName, sFi.FullName);
 							sw.Stop();
-							//_log.Log<Sync>(LogLevel.Info, $"[TM]\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, {sLen:#,##0})");
 							Log.Info($"\t{sw.Elapsed.TotalSeconds} [sec], Count in dir: ({++fCount}/{fsCount})");
 						}
 						else
 						{
-							//_log.Log<Sync>(LogLevel.Info, $"[TM]\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, {sLen:#,##0})");
 							Log.Info($"\t(Report only), Count in dir: ({++fCount}/{fsCount})");
 						}
 					}
 					else if (pLen != sLen)
 					{
-						Log.Info($"[LN]\t({pFi.FullName}, {pLaccess}, [L: {pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [L: {sLen:#,##0}])");
+						Log.Info($"[LN]\t(\"{pFi.FullName}\", {pLaccess}, [L: {pLen:#,##0}])\t-\t(\"{sFi.FullName}\", {sLaccess}, [L: {sLen:#,##0}])");
 						if (_isCopy)
 						{
 							var sw = new Stopwatch();
@@ -188,12 +186,10 @@ namespace MySync
 							++_copyFileCount;
 							_fs.CopyFile(pFi.FullName, sFi.FullName);
 							sw.Stop();
-							//_log.Log<Sync>(LogLevel.Info, $"[LN]:\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [{sLen:#,##0}])");
 							Log.Info($"\t{sw.Elapsed.TotalSeconds} [sec], Count in dir: ({++fCount}/{fsCount})");
 						}
 						else
 						{
-							//_log.Log<Sync>(LogLevel.Info, $"[LN]:\t({pFi.FullName}, {pLaccess}, [{pLen:#,##0}])\t-\t({sFi.FullName}, {sLaccess}, [{sLen:#,##0}])");
 							Log.Info($"\t(Report only), Count in dir: ({++fCount}/{fsCount})");
 						}
 					}

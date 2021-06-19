@@ -6,7 +6,7 @@ namespace MySync.LogService
 {
 	internal class LogLocator : ILogLocator
 	{
-		private readonly Hashtable _services = new Hashtable();
+		private readonly Hashtable _services = new();
 
 		public LogLocator(string serviceName)
 		{

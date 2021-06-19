@@ -14,7 +14,7 @@ namespace MySync.IocContainer
 
 		private static readonly IUnityContainer UnityContainer;
 
-		public static readonly UnityDependencyResolver Inst = new UnityDependencyResolver();
+		public static readonly UnityDependencyResolver Inst = new();
 
 		public bool IsInitialized { get; private set; }
 

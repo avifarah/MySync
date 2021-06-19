@@ -15,6 +15,6 @@ namespace MySync
 
 		public int TotalDirectoryCount { get; }
 
-		public DirectoryNumbers NextNumbers(int directoryCount, int totalDirectoryCount) => new DirectoryNumbers(NestingLevel + 1, directoryCount, totalDirectoryCount);
+		public DirectoryNumbers NextNumbers(int directoryCount, int totalDirectoryCount) => new(NestingLevel + 1, directoryCount, totalDirectoryCount);
 	}
 }

@@ -215,14 +215,14 @@ namespace MySync
 
 		private const string PatMaxTimeWaitTimeSpan = @"^\s*(?<TimeSpan>(?<hh>\d+)\s*,\s*(?<mm>\d+)\s*,\s*(?<ss>\d+))\s*$";
 		private const string PatMaxTimeWaitSeconds = @"^\s*(?<Seconds>(?<ss>\d+)(?<ms>\.\d+)?)\s*$";
-		private static readonly Regex ReMaxTimeWait = new Regex($"({PatMaxTimeWaitTimeSpan})|({PatMaxTimeWaitSeconds})", RegexOptions.Singleline);
+		private static readonly Regex ReMaxTimeWait = new($"({PatMaxTimeWaitTimeSpan})|({PatMaxTimeWaitSeconds})", RegexOptions.Singleline);
 
 		public TimeSpan MaxTimeToWaitForFileCopy
 		{
 			get
 			{
 				const string key = "Time to wait for file copy to succeed";
-				TimeSpan def = new TimeSpan(0, 10, 0);
+				TimeSpan def = new(0, 10, 0);
 
 				if (_cacheTimeSpan.ContainsKey(key)) return _cacheTimeSpan[key];
 
@@ -257,7 +257,7 @@ namespace MySync
 			}
 		}
 
-		private static readonly Regex ReMaxTimeWaitTimeSpan = new Regex(PatMaxTimeWaitTimeSpan, RegexOptions.Singleline);
+		private static readonly Regex ReMaxTimeWaitTimeSpan = new(PatMaxTimeWaitTimeSpan, RegexOptions.Singleline);
 
 		//public TimeSpan MaxTimeToWaitForDirectoryCopy
 		//{
@@ -297,7 +297,7 @@ namespace MySync
 
 				if (_cacheTimeSpan.ContainsKey(key)) return _cacheTimeSpan[key];
 
-				TimeSpan def = new TimeSpan(0, 0, 15);
+				TimeSpan def = new(0, 0, 15);
 				var maxWait = GetValue(key);
 				if (string.IsNullOrWhiteSpace(maxWait))
 				{
@@ -371,7 +371,7 @@ namespace MySync
 		}
 
 		private const string ExcludePat = @"(""(?<file1>([^""]|"""")+)""(;|$))|((?<file2>[^;]+)(;|$))";
-		private static readonly Regex ExcludeRe = new Regex(ExcludePat, RegexOptions.Singleline);
+		private static readonly Regex ExcludeRe = new(ExcludePat, RegexOptions.Singleline);
 
 		public IEnumerable<string> ExcludeFiles
 		{

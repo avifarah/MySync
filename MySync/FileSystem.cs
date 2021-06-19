@@ -121,7 +121,7 @@ namespace MySync
 		//}
 
 		private static object _lastTouched = DateTime.Now;
-		private static readonly AutoResetEvent ExitProcSignal = new AutoResetEvent(false);
+		private static readonly AutoResetEvent ExitProcSignal = new(false);
 
 		private static void XcopyDirectory(string src, string dst)
 		{
@@ -130,82 +130,82 @@ namespace MySync
 			//var output = new StringBuilder();
 			//var errOut = new StringBuilder();
 
-			using (var proc = new Process { EnableRaisingEvents = true })
-			{
-				proc.Disposed += (sender, args) => { };
+            using var proc = new Process { EnableRaisingEvents = true };
+            proc.Disposed += (sender, args) => { };
 
-				proc.OutputDataReceived += (sender, e) => {
-					Interlocked.Exchange(ref _lastTouched, DateTime.Now);
-					if (!string.IsNullOrEmpty(e.Data))
-						Log.Info($"[{++lineCount}]: {e.Data}");
-				};
+            proc.OutputDataReceived += (sender, e) =>
+            {
+                Interlocked.Exchange(ref _lastTouched, DateTime.Now);
+                if (!string.IsNullOrEmpty(e.Data))
+                    Log.Info($"[{++lineCount}]: {e.Data}");
+            };
 
-				proc.ErrorDataReceived += (sender, e) => {
-					Interlocked.Exchange(ref _lastTouched, DateTime.Now);
-					if (!string.IsNullOrWhiteSpace(e.Data))
-						Log.Error($"XCopy reported an error [{++errCount}]: {e.Data}");
-				};
+            proc.ErrorDataReceived += (sender, e) =>
+            {
+                Interlocked.Exchange(ref _lastTouched, DateTime.Now);
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                    Log.Error($"XCopy reported an error [{++errCount}]: {e.Data}");
+            };
 
-				proc.StartInfo.FileName = "XCopy";
-				//	/A	...	Copies only files with the archive attribute set, doesn't change the attribute.
-				//	/M	...	Copies only files with the archive attribute set, turns off the archive attribute.
-				//	/D:m-d-y	Copies files changed on or after the specified date.  If no date is given, copies only those files whose source time is newer than the destination time.
-				//	/EXCLUDE:file1[+file2][+file3]...	Specifies a list of files containing strings. Each string should be in a separate line in the files.  When any of the strings 
-				//										match any part of the absolute path of the file to be copied, that file will be excluded from being copied.  For example, specifying 
-				//										a string like \obj\ or.obj will exclude all files underneath the directory obj or all files with the .obj extension respectively.
-				//	/P	...	Prompts you before creating each destination file.
-				//  /S	...	Copies directories and subdirectories except empty ones.
-				//  /E	...	Copies directories and subdirectories, including empty ones.  Same as /S /E.May be used to modify /T.
-				//	/V	...	Verifies the size of each new file.
-				//	/W	...	Prompts you to press a key before copying.
-				//  /C	...	Continues copying even if errors occur.
-				//  /I	...	If destination does not exist and copying more than one file, assumes that destination must be a directory.
-				//	/Q	...	Does not display file names while copying.
-				//	/F	...	Displays full source and destination file names while copying.
-				//	/L	...	Displays files that would be copied.
-				//	/G	...	Allows the copying of encrypted files to destination that does not support encryption.
-				//  /H	...	Copies hidden and system files also.
-				//  /R	...	Overwrites read-only files.
-				//	/T	...	Creates directory structure, but does not copy files. Does not include empty directories or subdirectories. /T /E includes empty directories and subdirectories.
-				//	/U	...	Copies only files that already exist in destination.
-				//	/K	...	Copies attributes. Normal Xcopy will reset read-only attributes.
-				//	/N	...	Copies using the generated short names.
-				//	/O	...	Copies file ownership and ACL information.
-				//	/X	...	Copies file audit settings (implies /O).
-				//	/Y	...	Suppresses prompting to confirm you want to overwrite an existing destination file.
-				//	/-Y	...	Causes prompting to confirm you want to overwrite an existing destination file.
-				//	/Z	...	Copies networked files in restartable mode.
-				//	/B	...	Copies the Symbolic Link itself versus the target of the link.
-				//	/J	...	Copies using unbuffered I/O. Recommended for very large files.
-				proc.StartInfo.Arguments = $"\"{src}\" \"{dst}\" /E/C/I/H/R/K/Y";
-				proc.StartInfo.UseShellExecute = false;
-				proc.StartInfo.RedirectStandardOutput = true;
-				proc.StartInfo.RedirectStandardError = true;
-				proc.StartInfo.CreateNoWindow = true;
+            proc.StartInfo.FileName = "XCopy";
+            //	/A	...	Copies only files with the archive attribute set, doesn't change the attribute.
+            //	/M	...	Copies only files with the archive attribute set, turns off the archive attribute.
+            //	/D:m-d-y	Copies files changed on or after the specified date.  If no date is given, copies only those files whose source time is newer than the destination time.
+            //	/EXCLUDE:file1[+file2][+file3]...	Specifies a list of files containing strings. Each string should be in a separate line in the files.  When any of the strings 
+            //										match any part of the absolute path of the file to be copied, that file will be excluded from being copied.  For example, specifying 
+            //										a string like \obj\ or.obj will exclude all files underneath the directory obj or all files with the .obj extension respectively.
+            //	/P	...	Prompts you before creating each destination file.
+            //  /S	...	Copies directories and subdirectories except empty ones.
+            //  /E	...	Copies directories and subdirectories, including empty ones.  Same as /S /E.May be used to modify /T.
+            //	/V	...	Verifies the size of each new file.
+            //	/W	...	Prompts you to press a key before copying.
+            //  /C	...	Continues copying even if errors occur.
+            //  /I	...	If destination does not exist and copying more than one file, assumes that destination must be a directory.
+            //	/Q	...	Does not display file names while copying.
+            //	/F	...	Displays full source and destination file names while copying.
+            //	/L	...	Displays files that would be copied.
+            //	/G	...	Allows the copying of encrypted files to destination that does not support encryption.
+            //  /H	...	Copies hidden and system files also.
+            //  /R	...	Overwrites read-only files.
+            //	/T	...	Creates directory structure, but does not copy files. Does not include empty directories or subdirectories. /T /E includes empty directories and subdirectories.
+            //	/U	...	Copies only files that already exist in destination.
+            //	/K	...	Copies attributes. Normal Xcopy will reset read-only attributes.
+            //	/N	...	Copies using the generated short names.
+            //	/O	...	Copies file ownership and ACL information.
+            //	/X	...	Copies file audit settings (implies /O).
+            //	/Y	...	Suppresses prompting to confirm you want to overwrite an existing destination file.
+            //	/-Y	...	Causes prompting to confirm you want to overwrite an existing destination file.
+            //	/Z	...	Copies networked files in restartable mode.
+            //	/B	...	Copies the Symbolic Link itself versus the target of the link.
+            //	/J	...	Copies using unbuffered I/O. Recommended for very large files.
+            proc.StartInfo.Arguments = $"\"{src}\" \"{dst}\" /E/C/I/H/R/K/Y";
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.CreateNoWindow = true;
 
-				var tsk = RunProcessAsync(proc, src, dst);
-				for (; ; )
-				{
-					if (tsk.IsCompleted)
-					{
-						var rc = tsk.Result;
-						if (rc == 0) return;
+            var tsk = RunProcessAsync(proc, src, dst);
+            for (; ; )
+            {
+                if (tsk.IsCompleted)
+                {
+                    var rc = tsk.Result;
+                    if (rc == 0) return;
 
-						Log.Info($"Xcopy returned code: {rc}");
-						var waitTime = MySyncConfiguration.Inst.MaxWaitForExitProcToComplete;
-						var waitOneRc = ExitProcSignal.WaitOne(waitTime);
-						if (!waitOneRc) Log.Error("Process Time of waiting expired");
-						return;
-					}
+                    Log.Info($"Xcopy returned code: {rc}");
+                    var waitTime = MySyncConfiguration.Inst.MaxWaitForExitProcToComplete;
+                    var waitOneRc = ExitProcSignal.WaitOne(waitTime);
+                    if (!waitOneRc) Log.Error("Process Time of waiting expired");
+                    return;
+                }
 
 
-					if (DateTime.Now - (DateTime)_lastTouched > MySyncConfiguration.Inst.MaxTimeToWaitForFileCopy) break;
-					Thread.Sleep(500);
-				}
+                if (DateTime.Now - (DateTime)_lastTouched > MySyncConfiguration.Inst.MaxTimeToWaitForFileCopy) break;
+                Thread.Sleep(500);
+            }
 
-				return;
-			}
-		}
+            return;
+        }
 
 		private static Task<int> RunProcessAsync(Process proc, string src, string dst)
 		{

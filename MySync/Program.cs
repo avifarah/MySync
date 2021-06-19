@@ -107,7 +107,7 @@ namespace MySync
 				return;
 			}
 
-			Stopwatch stopWatch = new Stopwatch();
+			Stopwatch stopWatch = new();
 			stopWatch.Start();
 
 			//
